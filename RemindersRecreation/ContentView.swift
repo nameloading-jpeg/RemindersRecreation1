@@ -8,21 +8,27 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isEditing: Bool = false
-    // TODO: Add an @State property to hold a RemindersPage struct
-    @State private var page: RemindersPage = RemindersPage(title: "To-Do", items: [], color: .white)
+    @State private var page: RemindersPage = RemindersPage(title: "To-Do", items: [], color: .red)
     
     var body: some View {
         VStack {
             HStack {
                 Text(page.title)
-                    .font(.system(size: 50))
+                    .font(.system(size: 40))
                 Spacer()
-                Image(systemName: "info.circle")
-                    .font(.title)
+                Button {
+                    isEditing = true
+                } label: {
+                    Image(systemName: "info.circle")
+                }
             }
             .bold()
+            .foregroundStyle(page.color)
+            
             List {
                 ForEach($page.items) { $reminder in
+                    ReminderView(reminder: $reminder)
+                        .foregroundStyle(page.color)
                 }
                 .onDelete { indexSet in
                     page.items.remove(atOffsets: indexSet)
@@ -30,15 +36,39 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             
-            // TODO: Add footer view
-
+            HStack {
+                Spacer()
+                Button {
+                    page.items.append(Reminder(title: "", isCompleted: false))
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.largeTitle)
+                        .foregroundStyle(page.color)
+                }
+            }
+            .padding()
         }
         .padding()
         .sheet(isPresented: $isEditing) {
-            // TODO: Add remaining binding
-//            EditSheet(selectedColor: /* page color */)
+            EditSheet(title: $page.title, selectedColor: $page.color)
         }
     }
+}
+
+struct ReminderView: View {
+    @Binding var reminder: Reminder
+    var body: some View {
+        HStack {
+            Button {
+                reminder.isCompleted.toggle()
+            } label: {
+                Image(systemName: reminder.isCompleted ? "circle.fill" : "circle")
+            }
+            TextField("reminder", text: $reminder.title)
+                .foregroundStyle(reminder.isCompleted ? .gray : .primary)
+        }
+    }
+
 }
 
 #Preview {

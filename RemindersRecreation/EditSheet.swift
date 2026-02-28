@@ -7,25 +7,34 @@
 import SwiftUI
 
 struct EditSheet: View {
-    // TODO: Add title binding
+    @Binding var title: String
     @Binding var selectedColor: Color
     
     var body: some View {
         VStack(spacing: 20) {
-                // TODO: Add list.bullet.circle.fill icon and TextField
+            Text("List Info")
+                .font(.title2)
+                .padding(.top, 20)
+            VStack {
+                Image(systemName: "list.bullet.circle.fill")
+                    .font(.system(size: 100))
+                TextField("name", text: $title)
+                    .bold()
+                    .padding()
+                    .background(Color(.systemGray5), in: RoundedRectangle(cornerRadius: 8))
+            }
+            .padding()
+            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
             
             ColorChooser(selectedColor: $selectedColor)
             
             Spacer()
         }
         .foregroundStyle(selectedColor)
-        .padding()
+        .padding(20)
     }
 }
 
 #Preview {
-    @Previewable @State var selectedColor: Color = .red
-    
-    EditSheet(selectedColor: $selectedColor)
-        .preferredColorScheme(.dark)
+    ContentView()
 }
