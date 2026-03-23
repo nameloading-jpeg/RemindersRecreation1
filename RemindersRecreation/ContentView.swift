@@ -11,51 +11,60 @@ struct ContentView: View {
     @State private var page: RemindersPage = RemindersPage(title: "To-Do", items: [], color: .red)
     
     var body: some View {
-        VStack {
-            HStack {
-                Text(page.title)
-                    .font(.system(size: 40))
-                Spacer()
-                Button {
-                    isEditing = true
-                } label: {
-                    Image(systemName: "info.circle")
+        NavigationStack {
+            VStack {
+                HStack {
+                    Text(page.title)
+                        .font(.system(size: 40))
+                    Spacer()
                 }
+                .bold()
+                .foregroundStyle(page.color)
+                
+                List {
+                    ForEach($page.items) { $reminder in
+                        ReminderView(isEditing: $isEditing, color: $page.color, reminder: $reminder)
+                            .foregroundStyle(page.color)
+                    }
+                    .onDelete { indexSet in
+                        page.items.remove(atOffsets: indexSet)
+                    }
+                }
+                .listStyle(.plain)
+                
+                HStack {
+                    Spacer()
+                    Button {
+                        page.items.append(Reminder(title: "", description: "", date: Date(), isCompleted: false))
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(page.color)
+                    }
+                }
+                .padding()
             }
-            .bold()
-            .foregroundStyle(page.color)
-            
-            List {
-                ForEach($page.items) { $reminder in
-                    ReminderView(reminder: $reminder)
-                        .foregroundStyle(page.color)
-                }
-                .onDelete { indexSet in
-                    page.items.remove(atOffsets: indexSet)
-                }
-            }
-            .listStyle(.plain)
-            
-            HStack {
-                Spacer()
-                Button {
-                    page.items.append(Reminder(title: "", isCompleted: false))
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.largeTitle)
-                        .foregroundStyle(page.color)
+            .toolbar() {
+                ToolbarItem {
+                    Button {
+                        isEditing = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                    .foregroundStyle(page.color)
                 }
             }
             .padding()
-        }
-        .padding()
-        .sheet(isPresented: $isEditing) {
-            EditSheet(title: $page.title, selectedColor: $page.color)
+            .sheet(isPresented: $isEditing) {
+                EditSheet(title: $page.title, selectedColor: $page.color)
+            }
         }
     }
 }
 
 struct ReminderView: View {
+    @Binding var isEditing: Bool
+    @Binding var color: Color
     @Binding var reminder: Reminder
     var body: some View {
         HStack {
@@ -64,8 +73,10 @@ struct ReminderView: View {
             } label: {
                 Image(systemName: reminder.isCompleted ? "circle.fill" : "circle")
             }
+            .buttonStyle(.borderless)
             TextField("reminder", text: $reminder.title)
                 .foregroundStyle(reminder.isCompleted ? .gray : .primary)
+            NavigationLink("\(reminder.date, style: .relative)", destination: ReminderDetailView(isEditing: $isEditing, color: $color, title: $reminder.title, description: $reminder.description, date: $reminder.date))
         }
     }
 
